@@ -61,6 +61,32 @@ export default function UnifiedWalletPanel() {
         }
     }, [active, evmConnected, evmAddress, currentChain?.name, solConnected, solAddress])
 
+    const disconnectActive = async () => {
+        if (active === "EVM" && evmConnected) evmDisconnect();
+        if (active === "SOLANA" && solConnected) await solWallet.disconnect();
+    }
+
+
+    const switchEcosystem = async (next: Ecosystem) => {
+        if (next === active) {
+            if (active === "EVM") openConnectModal?.();
+            if (active === "SOLANA") setVisible(true);
+            return;
+        }
+
+        await disconnectActive();
+        setActive(next);
+        setPickerOpen(false);
+
+        if (next === "EVM") openConnectModal?.();
+        if (next === "SOLANA") setVisible(true);
+    };
+
+    const connect = () => {
+        if (active === "EVM") return openConnectModal?.();
+        if (active === "SOLANA") return setVisible(true)
+    }
+
     return (
         <div className="max-w-6xl rounded-xl border border-gray-200 p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -83,13 +109,119 @@ export default function UnifiedWalletPanel() {
                     {active === "EVM" && status.connected && (
                         <button
                             onClick={() => openChainModal?.()}
+                            type="button"
                             className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm font-medium hover:bg-gray-50 active:bg-gray-100">
                             Switch Chain
+                        </button>
+                    )}
+
+                    {status.connected ? (
+                        <button
+                            type="button"
+                            onClick={disconnectActive}
+                            className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm font-medium hover:bg-gray-50 active:bg-gray-100"
+
+                        >
+                            Disconnect
+                        </button>
+                    ) : (
+                        <button
+                            onClick={connect}
+                            type="button"
+                            className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm font-medium hover:bg-gray-50 active:bg-gray-100">
+                            Connect Wallet
                         </button>
                     )}
                 </div>
 
             </div>
+
+            <div className="mt-3 grid gap-1.5 text-sm text-gray-600">
+
+                <div>
+                    <span className="font-semibold text-gray-800">Status:</span>{" "}
+                    {status.connected ? "Connected" : "Disconnected"}
+                </div>
+                <div>
+                    <span className="font-semibold text-gray-800">Address:</span> {" "}
+                    {status.connected ? short(status.address) : "-"}
+                </div>
+                <div>
+                    <span className="font-semibold text-gray-800">Network:</span> {status.network}
+                </div>
+
+                {active === "EVM" && (
+                    <div>
+                        <span className="font-semibold text-gray-800">Chain ID:</span>{chainId ?? "-"}
+                    </div>
+                )}
+
+                {active === "SOLANA" && (
+                    <div>
+                        <span className="font-semibold text-gray-800">RPC:</span> {" "}
+                        {(connection as any)?._rpcEndpoint ?? "-"}
+                    </div>
+                )}
+
+            </div>
+
+            {pickerOpen && (
+                <div className="fixed inset-0 z-50 bg-black/40">
+                    <div className="flex min-h-full items-center justify-center p-4">
+                        <div className="w-full max-w-[420px] rounded-xl bg-gray-900 p-4 shadow-lg">
+                            <div className="flex items-center justify-between">
+                                <div className="text-sm font-semibold">Select Ecosystem</div>
+
+                                <button
+                                    onClick={() => setPickerOpen(false)}
+                                    type="button"
+                                    className="rounded-md px-2 py-1 text-sm text-gray-600 hover:bg-purple-900 hover:text-white">
+                                    X
+                                </button>
+                            </div>
+
+
+                            <div className="mt-3 grid gap-2.5">
+                                <button
+                                    onClick={() => switchEcosystem("EVM")}
+                                    type="button"
+                                    className="rounded-lg border border-gray-200 p-3 text-left hover:bg-gray-700 active:bg-gray-100"
+                                >
+                                    <div className="font-semibold">EVM</div>
+                                    <div className="mt-0.5 text-xs text-gray-500">
+                                        Ethereum, Base, Arbitrum, Optimism, Polygon…
+                                    </div>
+                                </button>
+
+                                <button
+                                    onClick={() => switchEcosystem("SOLANA")}
+                                    type="button"
+                                    className="rounded-lg border border-gray-200 p-3 text-left hover:bg-gray-700 active:bg-gray-100"
+                                >
+                                    <div className="font-semibold">Solana</div>
+                                    <div className="mt-0.5 text-xs text-gray-500">
+                                        Phantom, Solflare, Backpack…
+                                    </div>
+                                </button>
+
+                                <button
+                                    onClick={() => switchEcosystem("TON")}
+                                    type="button"
+                                    className="rounded-lg border border-gray-200 p-3 text-left opacity-60 hover:bg-gray-700 active:bg-gray-100"
+                                >
+                                    <div className="font-semibold">TON</div>
+                                    <div className="mt-0.5 text-xs text-gray-500">We’ll add TON next</div>
+                                </button>
+                            </div>
+
+                            <div className="mt-2.5 text-xs text-gray-500">
+                                Switching ecosystems disconnects the current one first.
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
