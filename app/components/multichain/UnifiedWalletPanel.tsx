@@ -114,11 +114,11 @@ export default function UnifiedWalletPanel() {
 
 
     return (
-        <div className="max-w-6xl rounded-xl border border-gray-200 p-4">
+        <div className="max-w-6xl rounded-[28px] bg-white p-7 shadow-sm ring-1 ring-slate-200 ">
             <div className="flex flex-wrap items-start justify-between gap-3">
 
                 <div>
-                    <h2 className="m-0 text-lg font-semibold">
+                    <h2 className="m-0 text-4xl  text-black font-semibold">
                         Wallet
                         <div className="text-sm text-gray-500">{ECOSYSTEM_LABEL[active]}</div>
                     </h2>
@@ -128,7 +128,7 @@ export default function UnifiedWalletPanel() {
                     <button
                         onClick={() => setPickerOpen(true)}
                         type="button"
-                        className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm font-medium hover:bg-gray-50 hover:text-purple-500 active:bg-gray-100">
+                        className="rounded-full border px-3 py-2.5 text-xs font-medium bg-[#EDAF32] hover:bg-gray-50 text-black  active:bg-gray-100">
                         Change Network
                     </button>
 
@@ -136,7 +136,7 @@ export default function UnifiedWalletPanel() {
                         <button
                             onClick={() => openChainModal?.()}
                             type="button"
-                            className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm font-medium hover:bg-gray-50 active:bg-gray-100">
+                            className="rounded-full border px-3 py-2.5 text-xs font-medium bg-[#4FF9BF] hover:bg-gray-50 text-black  active:bg-gray-100">
                             Switch Chain
                         </button>
                     )}
@@ -145,7 +145,7 @@ export default function UnifiedWalletPanel() {
                         <button
                             type="button"
                             onClick={disconnectActive}
-                            className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm font-medium hover:bg-gray-50 active:bg-gray-100"
+                            className="rounded-full border px-3 py-2.5 text-xs font-medium bg-[#EF6462] hover:bg-gray-50 text-black  active:bg-gray-100"
 
                         >
                             Disconnect
@@ -154,7 +154,7 @@ export default function UnifiedWalletPanel() {
                         <button
                             onClick={connectActive}
                             type="button"
-                            className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm font-medium hover:bg-gray-50 active:bg-gray-100">
+                            className="rounded-full border px-3 py-2.5 text-xs font-medium bg-[#7EACC1] hover:bg-gray-50 text-black  active:bg-gray-100">
                             Connect Wallet
                         </button>
                     )}
@@ -162,22 +162,30 @@ export default function UnifiedWalletPanel() {
 
             </div>
 
-            <div className="mt-3 grid gap-1.5 text-sm text-gray-600">
+            <div className="h-full flex gap-1.5 text-sm text-gray-600">
 
                 <div>
-                    <span className="font-semibold text-gray-800">Status:</span>{" "}
-                    {status.connected ? "Connected" : "Disconnected"}
+                    <div>
+                        <span className="font-semibold text-gray-800">Status:</span>{" "}
+                        {status.connected ? "Connected" : "Disconnected"}
+                    </div>
+                    <div>
+                        <span className="font-semibold text-gray-800">Address:</span> {" "}
+                        {status.connected ? short(status.address) : "-"}
+                    </div>
+                    <div>
+                        <span className="font-semibold text-gray-800">Network:</span> {status.network}
+                    </div>
+
                 </div>
+
+
                 <div>
-                    <span className="font-semibold text-gray-800">Address:</span> {" "}
-                    {status.connected ? short(status.address) : "-"}
-                </div>
-                <div>
-                    <span className="font-semibold text-gray-800">Network:</span> {status.network}
+
                 </div>
 
                 {active === "EVM" && (
-                    <div>
+                    <div className="flex items-center justify-end">
                         <span className="font-semibold text-gray-800">Chain ID:</span>{chainId ?? "-"}
                     </div>
                 )}
