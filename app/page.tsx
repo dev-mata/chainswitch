@@ -14,7 +14,7 @@ export default function Home() {
       <div className="mx-auto max-w-6xl px-4 py-6">
         <Header />
 
-        <section className="mt-6">
+        <section className="mt-16">
           <div className="grid gap-6 lg:grid-cols-2">
             <LeftHero />
             <UnifiedWalletPanel />

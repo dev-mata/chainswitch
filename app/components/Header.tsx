@@ -21,9 +21,9 @@ export default function Header() {
                 ))}
             </nav>
 
-            <button className="rounded-full bg-slate-900 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800">
+            <a href="https://devmata.com" className="rounded-full bg-slate-900 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800">
                 Learn More
-            </button>
+            </a>
 
         </header>
     )
