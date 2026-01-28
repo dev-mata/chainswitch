@@ -3,8 +3,10 @@ import { Ecosystem, ECOSYSTEM_LABEL } from "@/lib/multichain/ecosystem";
 import { useChainModal, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import { act, useMemo, useState } from "react";
+import { act, useEffect, useMemo, useState } from "react";
 import { useAccount, useChainId, useChains, useDisconnect } from "wagmi";
+
+import { useTonAddress, useTonConnectModal, useTonConnectUI, useTonWallet } from "@tonconnect/ui-react";
 
 function short(addr?: string) {
     if (!addr) return ""
@@ -21,6 +23,15 @@ export default function UnifiedWalletPanel() {
 
 
 
+    useEffect(() => {
+        const saved = (typeof window != "undefined" && window.localStorage.getItem(LS_KEY)) as Ecosystem | null;
+        if (saved === "EVM" || saved === "SOLANA" || saved === "TON") setActive(saved)
+    }, [])
+
+    useEffect(() => {
+        if (typeof window !== "undefined") window.localStorage.setItem(LS_KEY, active)
+    }, [active])
+
     const evmAccount = useAccount();
     const evmConnected = evmAccount.isConnected;
     const evmAddress = evmAccount.address
@@ -36,7 +47,14 @@ export default function UnifiedWalletPanel() {
     const solWallet = useWallet()
     const solConnected = !!solWallet.publicKey;
     const solAddress = solWallet.publicKey?.toBase58()
-    const { setVisible } = useWalletModal();
+    const { setVisible: openSolModal } = useWalletModal();
+
+
+    const tonAddress = useTonAddress()
+    const tonWallet = useTonWallet()
+    const tonModal = useTonConnectModal()
+    const [tonConnectUI] = useTonConnectUI()
+    const tonConnected = !!tonWallet;
 
     const status = useMemo(() => {
         if (active === "EVM") {
@@ -55,37 +73,45 @@ export default function UnifiedWalletPanel() {
         }
         return {
 
-            connected: false,
-            address: "",
-            network: "TON(coming next)"
+            connected: tonConnected,
+            address: tonAddress ?? "",
+            network: tonWallet?.account ? `TON • ${tonWallet.account}` : "TON"
         }
-    }, [active, evmConnected, evmAddress, currentChain?.name, solConnected, solAddress])
+    }, [active, evmConnected, evmAddress, currentChain?.name, solConnected, solAddress, tonConnected, tonAddress, tonWallet?.account])
 
     const disconnectActive = async () => {
         if (active === "EVM" && evmConnected) evmDisconnect();
         if (active === "SOLANA" && solConnected) await solWallet.disconnect();
+        if (active === "TON" && tonConnected) await tonConnectUI.disconnect();
     }
+
+
+
+    const connectActive = () => {
+        if (active === "EVM") return openConnectModal?.();
+        if (active === "SOLANA") return openSolModal(true);
+        if (active === "TON") return tonModal.open();
+    };
 
 
     const switchEcosystem = async (next: Ecosystem) => {
         if (next === active) {
-            if (active === "EVM") openConnectModal?.();
-            if (active === "SOLANA") setVisible(true);
+            connectActive();
+            setPickerOpen(false);
             return;
         }
-
         await disconnectActive();
         setActive(next);
         setPickerOpen(false);
 
+        // open the right connect modal after switching
         if (next === "EVM") openConnectModal?.();
-        if (next === "SOLANA") setVisible(true);
+        if (next === "SOLANA") openSolModal(true);
+        if (next === "TON") tonModal.open();
     };
 
-    const connect = () => {
-        if (active === "EVM") return openConnectModal?.();
-        if (active === "SOLANA") return setVisible(true)
-    }
+
+
 
     return (
         <div className="max-w-6xl rounded-xl border border-gray-200 p-4">
@@ -126,7 +152,7 @@ export default function UnifiedWalletPanel() {
                         </button>
                     ) : (
                         <button
-                            onClick={connect}
+                            onClick={connectActive}
                             type="button"
                             className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm font-medium hover:bg-gray-50 active:bg-gray-100">
                             Connect Wallet

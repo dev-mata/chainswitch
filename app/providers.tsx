@@ -8,12 +8,16 @@ import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { WagmiProvider } from "wagmi";
 import { useMemo } from "react";
+
+// Solana
+
 import { getSolanaEndpoint } from "@/lib/solana/config";
 import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adapter-wallets";
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 
-// Solana
+// ton
+import { TonConnectUIProvider } from '@tonconnect/ui-react';
 
 
 const queryClient = new QueryClient();
@@ -30,6 +34,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         []
     )
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+    const manifestUrl = `${appUrl}/tonconnect-manifest.json`
+
     return (
         <WagmiProvider config={wagmiConfig}>
             <QueryClientProvider client={queryClient}>
@@ -37,7 +44,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
                     <ConnectionProvider endpoint={solanaEndpoint}>
                         <WalletProvider wallets={solanaWallets} autoConnect>
                             <WalletModalProvider>
-                                {children}
+
+                                <TonConnectUIProvider manifestUrl={manifestUrl}>{children}</TonConnectUIProvider>
                             </WalletModalProvider>
                         </WalletProvider>
                     </ConnectionProvider>
